@@ -5,11 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MockOracle is Ownable {
     // Events for tracking price updates
-    event PriceUpdated(
-        address indexed token,
-        uint256 oldPrice,
-        uint256 newPrice
-    );
+    event PriceUpdated(address indexed token, uint256 oldPrice, uint256 newPrice);
     event TokenAdded(address indexed token, uint256 price);
     event TokenRemoved(address indexed token);
 
@@ -79,9 +75,7 @@ contract MockOracle is Ownable {
 
         for (uint256 i = 0; i < supportedTokens.length; i++) {
             if (supportedTokens[i] == token) {
-                supportedTokens[i] = supportedTokens[
-                    supportedTokens.length - 1
-                ];
+                supportedTokens[i] = supportedTokens[supportedTokens.length - 1];
                 supportedTokens.pop();
                 break;
             }
@@ -95,10 +89,7 @@ contract MockOracle is Ownable {
      * @param newDefaultPrice New default price in USD with 18 decimals
      */
     function setDefaultPrice(uint256 newDefaultPrice) external onlyOwner {
-        require(
-            newDefaultPrice > 0,
-            "MockOracle: default price must be greater than 0"
-        );
+        require(newDefaultPrice > 0, "MockOracle: default price must be greater than 0");
         defaultPrice = newDefaultPrice;
     }
 
@@ -115,9 +106,7 @@ contract MockOracle is Ownable {
      * @param tokens Array of token addresses
      * @return tokenPrices Array of prices in USD with 18 decimals
      */
-    function getPrices(
-        address[] calldata tokens
-    ) external view returns (uint256[] memory tokenPrices) {
+    function getPrices(address[] calldata tokens) external view returns (uint256[] memory tokenPrices) {
         tokenPrices = new uint256[](tokens.length);
         for (uint256 i = 0; i < tokens.length; i++) {
             if (isSupported[tokens[i]]) {
@@ -151,14 +140,8 @@ contract MockOracle is Ownable {
      * @param tokens Array of token addresses to update
      * @param volatilityBps Volatility in basis points (e.g., 500 = 5%)
      */
-    function simulateChanges(
-        address[] calldata tokens,
-        uint256 volatilityBps
-    ) external onlyOwner {
-        require(
-            volatilityBps <= 1000,
-            "MockOracle: volatility too high (max 10%)"
-        );
+    function simulateChanges(address[] calldata tokens, uint256 volatilityBps) external onlyOwner {
+        require(volatilityBps <= 1000, "MockOracle: volatility too high (max 10%)");
 
         for (uint256 i = 0; i < tokens.length; i++) {
             if (isSupported[tokens[i]]) {
@@ -166,23 +149,14 @@ contract MockOracle is Ownable {
                 uint256 change = (currentPrice * volatilityBps) / 10000;
 
                 // Simulate random up/down movement
-                uint256 randomFactor = uint256(
-                    keccak256(
-                        abi.encodePacked(
-                            block.timestamp,
-                            block.prevrandao,
-                            tokens[i]
-                        )
-                    )
-                ) % 2;
+                uint256 randomFactor =
+                    uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, tokens[i]))) % 2;
 
                 uint256 newPrice;
                 if (randomFactor == 0) {
                     newPrice = currentPrice + change;
                 } else {
-                    newPrice = currentPrice > change
-                        ? currentPrice - change
-                        : currentPrice;
+                    newPrice = currentPrice > change ? currentPrice - change : currentPrice;
                 }
 
                 setPrice(tokens[i], newPrice);

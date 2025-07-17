@@ -67,15 +67,11 @@ contract PortfolioRebalancerTest is Test {
         // Deploy portfolio rebalancer
         portfolioImplementation = new PortfolioRebalancer();
 
-        signedDelegation = vm.signDelegation(
-            address(portfolioImplementation),
-            PRIVATE_KEY
-        );
+        signedDelegation = vm.signDelegation(address(portfolioImplementation), PRIVATE_KEY);
         vm.attachDelegation(signedDelegation);
 
         // Create portfolio configuration
-        PortfolioRebalancer.Asset[]
-            memory assets = new PortfolioRebalancer.Asset[](3);
+        PortfolioRebalancer.Asset[] memory assets = new PortfolioRebalancer.Asset[](3);
         assets[0] = PortfolioRebalancer.Asset(address(tokenDAI), 5000); // 50%
         assets[1] = PortfolioRebalancer.Asset(address(tokenETH), 3000); // 30%
         assets[2] = PortfolioRebalancer.Asset(address(tokenBTC), 2000); // 20%
@@ -105,10 +101,7 @@ contract PortfolioRebalancerTest is Test {
     }
 
     function testInitialBalancedState() public {
-        console2.log(
-            "signedDelegation.implementation",
-            signedDelegation.implementation
-        );
+        console2.log("signedDelegation.implementation", signedDelegation.implementation);
         console2.log("signedDelegation.nonce", signedDelegation.nonce);
         console2.log("signedDelegation.v", signedDelegation.v);
         console2.logBytes32(signedDelegation.r);
@@ -119,10 +112,9 @@ contract PortfolioRebalancerTest is Test {
         assertEq(tokenBTC.balanceOf(BOB), INITIAL_BTC);
 
         // Calculate total value
-        uint256 totalValue = ((INITIAL_DAI *
-            oracle.getPrice(address(tokenDAI))) / 1e18) +
-            ((INITIAL_ETH * oracle.getPrice(address(tokenETH))) / 1e18) +
-            ((INITIAL_BTC * oracle.getPrice(address(tokenBTC))) / 1e18);
+        uint256 totalValue = ((INITIAL_DAI * oracle.getPrice(address(tokenDAI))) / 1e18)
+            + ((INITIAL_ETH * oracle.getPrice(address(tokenETH))) / 1e18)
+            + ((INITIAL_BTC * oracle.getPrice(address(tokenBTC))) / 1e18);
 
         console2.log("Total portfolio value: $", totalValue / 1e18);
 
@@ -140,24 +132,17 @@ contract PortfolioRebalancerTest is Test {
         assertEq(tokenDAI.balanceOf(BOB), INITIAL_DAI + 2000e18);
 
         // Calculate new total value
-        uint256 newTotalValue = (((INITIAL_DAI + 2000e18) *
-            oracle.getPrice(address(tokenDAI))) / 1e18) +
-            ((INITIAL_ETH * oracle.getPrice(address(tokenETH))) / 1e18) +
-            ((INITIAL_BTC * oracle.getPrice(address(tokenBTC))) / 1e18);
+        uint256 newTotalValue = (((INITIAL_DAI + 2000e18) * oracle.getPrice(address(tokenDAI))) / 1e18)
+            + ((INITIAL_ETH * oracle.getPrice(address(tokenETH))) / 1e18)
+            + ((INITIAL_BTC * oracle.getPrice(address(tokenBTC))) / 1e18);
 
-        console2.log(
-            "New total value after +2000 DAI: $",
-            newTotalValue / 1e18
-        );
+        console2.log("New total value after +2000 DAI: $", newTotalValue / 1e18);
 
         // Check if portfolio is now disbalanced (should exceed 5% threshold)
         bool isDisbalanced = PortfolioRebalancer(BOB).ifDisbalanced();
         assertTrue(isDisbalanced, "Large imbalance should exceed threshold");
 
-        console2.log(
-            "Portfolio is disbalanced after large imbalance: ",
-            isDisbalanced
-        );
+        console2.log("Portfolio is disbalanced after large imbalance: ", isDisbalanced);
     }
 
     function testRebalancing() public {
@@ -166,10 +151,7 @@ contract PortfolioRebalancerTest is Test {
         tokenDAI.mint(BOB, 2000e18);
 
         // Verify portfolio is disbalanced
-        assertTrue(
-            PortfolioRebalancer(BOB).ifDisbalanced(),
-            "Portfolio should be disbalanced"
-        );
+        assertTrue(PortfolioRebalancer(BOB).ifDisbalanced(), "Portfolio should be disbalanced");
 
         // Get initial balances before rebalancing
         uint256 initialDAI = tokenDAI.balanceOf(BOB);
@@ -211,12 +193,7 @@ contract PortfolioRebalancerTest is Test {
         console2.log("After rebalancing:");
         console2.log("DAI balance:", finalDAI / 1e18);
         console2.log("ETH balance:", finalETH / 1e18);
-        console2.log(
-            "BTC balance:",
-            finalBTC / 1e18,
-            ",",
-            (finalBTC - 1e18) / 1e14
-        );
+        console2.log("BTC balance:", finalBTC / 1e18, ",", (finalBTC - 1e18) / 1e14);
 
         // Verify DAI was reduced
         assertLt(finalDAI, initialDAI, "DAI balance should be reduced");
@@ -230,10 +207,7 @@ contract PortfolioRebalancerTest is Test {
         bool isDisbalanced = PortfolioRebalancer(BOB).ifDisbalanced();
         assertTrue(!isDisbalanced, "Not disbalanced");
 
-        console2.log(
-            "Portfolio is balanced after rebalancing: ",
-            isDisbalanced
-        );
+        console2.log("Portfolio is balanced after rebalancing: ", isDisbalanced);
         console2.log("Rebalancing completed successfully");
     }
 
@@ -271,10 +245,8 @@ contract PortfolioRebalancerTest is Test {
         return abi.encodePacked(r, s, v);
     }
 
-    function encodeAssets(
-        PortfolioRebalancer.Asset[] memory assets
-    ) internal pure returns (bytes memory data) {
-        for (uint i = 0; i < assets.length; i++) {
+    function encodeAssets(PortfolioRebalancer.Asset[] memory assets) internal pure returns (bytes memory data) {
+        for (uint256 i = 0; i < assets.length; i++) {
             data = abi.encodePacked(data, assets[i].token, assets[i].targetBps);
         }
     }

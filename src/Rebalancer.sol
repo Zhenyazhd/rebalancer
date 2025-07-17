@@ -9,12 +9,12 @@ import {console} from "forge-std/console.sol";
 
 interface IUniswapV2Router {
     function swapExactTokensForTokens(
-        uint amountIn,
-        uint amountOutMin,
+        uint256 amountIn,
+        uint256 amountOutMin,
         address[] calldata path,
         address to,
-        uint deadline
-    ) external returns (uint[] memory amounts);
+        uint256 deadline
+    ) external returns (uint256[] memory amounts);
 }
 
 interface IPriceOracle {
@@ -105,22 +105,16 @@ contract PortfolioRebalancer {
         oracle = IPriceOracle(_oracle);
         ai_agent = _ai_agent;
 
-        for (uint i; i < _assets.length; i++) {
+        for (uint256 i; i < _assets.length; i++) {
             assets.push(_assets[i]);
         }
         owner = _owner;
         initialized = true;
     }
 
-    function encodeAssets(
-        Asset[] memory _assets
-    ) internal pure returns (bytes memory data) {
-        for (uint i = 0; i < _assets.length; i++) {
-            data = abi.encodePacked(
-                data,
-                _assets[i].token,
-                _assets[i].targetBps
-            );
+    function encodeAssets(Asset[] memory _assets) internal pure returns (bytes memory data) {
+        for (uint256 i = 0; i < _assets.length; i++) {
+            data = abi.encodePacked(data, _assets[i].token, _assets[i].targetBps);
         }
     }
 
@@ -128,7 +122,7 @@ contract PortfolioRebalancer {
         uint256 n = assets.length;
         uint256 totalValue = 0;
         uint256[] memory balances = new uint256[](n);
-        for (uint i; i < n; i++) {
+        for (uint256 i; i < n; i++) {
             uint256 bal = IERC20(assets[i].token).balanceOf(address(this));
             uint256 price = oracle.getPrice(assets[i].token);
             uint256 val = (bal * price) / 1e18;
@@ -136,14 +130,12 @@ contract PortfolioRebalancer {
             totalValue += val;
         }
 
-        for (uint i; i < n; i++) {
+        for (uint256 i; i < n; i++) {
             uint256 targetValue = (totalValue * assets[i].targetBps) / 10_000;
             uint256 currentVal = balances[i];
             if (
-                currentVal >
-                targetValue + ((totalValue * rebalanceThresholdBps) / 10_000) ||
-                currentVal + ((totalValue * rebalanceThresholdBps) / 10_000) <
-                targetValue
+                currentVal > targetValue + ((totalValue * rebalanceThresholdBps) / 10_000)
+                    || currentVal + ((totalValue * rebalanceThresholdBps) / 10_000) < targetValue
             ) {
                 return true;
             }
@@ -152,27 +144,14 @@ contract PortfolioRebalancer {
     }
 
     /// @dev Swap `amountUsd` worth of `sellToken` into all other tokens proportionally.
-    function executeRebalance(
-        address[] memory path,
-        uint256 amountIn
-    ) public onlyAiAgent onlyInitialized {
-        require(
-            (IERC20(path[0]).balanceOf(address(this)) * maxAmount) / 10_000 >=
-                amountIn,
-            "Not enough balance"
-        );
+    function executeRebalance(address[] memory path, uint256 amountIn) public onlyAiAgent onlyInitialized {
+        require((IERC20(path[0]).balanceOf(address(this)) * maxAmount) / 10_000 >= amountIn, "Not enough balance");
         uint256 n = assets.length;
         address tokenOut = path[path.length - 1];
-        for (uint i; i < n; i++) {
+        for (uint256 i; i < n; i++) {
             if (tokenOut == assets[i].token) {
                 IERC20(path[0]).approve(address(router), amountIn);
-                router.swapExactTokensForTokens(
-                    amountIn,
-                    1,
-                    path,
-                    address(this),
-                    block.timestamp + 300
-                );
+                router.swapExactTokensForTokens(amountIn, 1, path, address(this), block.timestamp + 300);
             }
         }
     }

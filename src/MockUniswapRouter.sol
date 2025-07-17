@@ -16,11 +16,7 @@ interface IPriceOracle {
 contract MockUniswapRouter is Ownable {
     // Events for tracking swaps
     event SwapExecuted(
-        address indexed tokenIn,
-        address indexed tokenOut,
-        uint256 amountIn,
-        uint256 amountOut,
-        address indexed to
+        address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 amountOut, address indexed to
     );
 
     // Fee percentage (0.3% like Uniswap V2)
@@ -54,11 +50,11 @@ contract MockUniswapRouter is Ownable {
      * @param amountIn Amount of input tokens
      * @return amountOut Amount of output tokens
      */
-    function calculateAmountOut(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn
-    ) internal view returns (uint256 amountOut) {
+    function calculateAmountOut(address tokenIn, address tokenOut, uint256 amountIn)
+        internal
+        view
+        returns (uint256 amountOut)
+    {
         // Get prices from oracle (in USD with 18 decimals)
         uint256 priceIn = oracle.getPrice(tokenIn);
         uint256 priceOut = oracle.getPrice(tokenOut);
@@ -97,20 +93,11 @@ contract MockUniswapRouter is Ownable {
         address tokenOut = path[path.length - 1];
 
         uint256 amountOut = calculateAmountOut(tokenIn, tokenOut, amountIn);
-        require(
-            amountOut >= amountOutMin,
-            "MockUniswap: insufficient output amount"
-        );
+        require(amountOut >= amountOutMin, "MockUniswap: insufficient output amount");
 
-        require(
-            IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn),
-            "MockUniswap: transfer from failed"
-        );
+        require(IERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn), "MockUniswap: transfer from failed");
 
-        require(
-            IERC20(tokenOut).transfer(to, amountOut),
-            "MockUniswap: transfer to failed"
-        );
+        require(IERC20(tokenOut).transfer(to, amountOut), "MockUniswap: transfer to failed");
 
         amounts = new uint256[](path.length);
         amounts[0] = amountIn;
@@ -125,16 +112,9 @@ contract MockUniswapRouter is Ownable {
      * @param amount Amount to withdraw
      * @param to Recipient address
      */
-    function emergencyWithdraw(
-        address token,
-        uint256 amount,
-        address to
-    ) external onlyOwner {
+    function emergencyWithdraw(address token, uint256 amount, address to) external onlyOwner {
         require(to != address(0), "MockUniswap: invalid recipient");
-        require(
-            IERC20(token).transfer(to, amount),
-            "MockUniswap: emergency withdraw failed"
-        );
+        require(IERC20(token).transfer(to, amount), "MockUniswap: emergency withdraw failed");
     }
 
     /**
@@ -143,10 +123,11 @@ contract MockUniswapRouter is Ownable {
      * @param path Array of token addresses
      * @return amounts Array with input and output amounts
      */
-    function getAmountsOut(
-        uint256 amountIn,
-        address[] calldata path
-    ) external view returns (uint256[] memory amounts) {
+    function getAmountsOut(uint256 amountIn, address[] calldata path)
+        external
+        view
+        returns (uint256[] memory amounts)
+    {
         require(path.length >= 2, "MockUniswap: invalid path");
         require(amountIn > 0, "MockUniswap: zero input amount");
 
@@ -168,10 +149,11 @@ contract MockUniswapRouter is Ownable {
      * @param path Array of token addresses
      * @return amounts Array with required input and desired output amounts
      */
-    function getAmountsIn(
-        uint256 amountOut,
-        address[] calldata path
-    ) external view returns (uint256[] memory amounts) {
+    function getAmountsIn(uint256 amountOut, address[] calldata path)
+        external
+        view
+        returns (uint256[] memory amounts)
+    {
         require(path.length >= 2, "MockUniswap: invalid path");
         require(amountOut > 0, "MockUniswap: zero output amount");
 
@@ -202,10 +184,7 @@ contract MockUniswapRouter is Ownable {
      * @param tokenOut Output token address
      * @return rate Exchange rate (amount of tokenOut per 1 tokenIn, with 18 decimals)
      */
-    function getExchangeRate(
-        address tokenIn,
-        address tokenOut
-    ) external view returns (uint256 rate) {
+    function getExchangeRate(address tokenIn, address tokenOut) external view returns (uint256 rate) {
         uint256 priceIn = oracle.getPrice(tokenIn);
         uint256 priceOut = oracle.getPrice(tokenOut);
 

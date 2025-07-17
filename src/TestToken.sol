@@ -12,7 +12,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * Включает функции mint, burn, permit и другие полезные функции для тестирования
  */
 contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
-    
     // События для отслеживания операций
     event TokensMinted(address indexed to, uint256 amount);
     event TokensBurned(address indexed from, uint256 amount);
@@ -23,11 +22,8 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
      * @param initialOwner Адрес владельца контракта
      * @param initialSupply Начальное количество токенов
      */
-    constructor(
-        address initialOwner,
-        uint256 initialSupply
-    ) 
-        ERC20("Test Token", "TEST") 
+    constructor(address initialOwner, uint256 initialSupply)
+        ERC20("Test Token", "TEST")
         ERC20Permit("Test Token")
         Ownable(initialOwner)
     {
@@ -51,15 +47,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
      * @param recipients Массив адресов получателей
      * @param amounts Массив количеств токенов для каждого получателя
      */
-    function batchMint(
-        address[] calldata recipients, 
-        uint256[] calldata amounts
-    ) external onlyOwner {
-        require(
-            recipients.length == amounts.length, 
-            "TestToken: arrays length mismatch"
-        );
-        
+    function batchMint(address[] calldata recipients, uint256[] calldata amounts) external onlyOwner {
+        require(recipients.length == amounts.length, "TestToken: arrays length mismatch");
+
         for (uint256 i = 0; i < recipients.length; i++) {
             _mint(recipients[i], amounts[i]);
             emit TokensMinted(recipients[i], amounts[i]);
@@ -82,10 +72,10 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     function emergencyWithdraw() external onlyOwner {
         uint256 balance = address(this).balance;
         require(balance > 0, "TestToken: no ETH to withdraw");
-        
-        (bool success, ) = payable(owner()).call{value: balance}("");
+
+        (bool success,) = payable(owner()).call{value: balance}("");
         require(success, "TestToken: ETH transfer failed");
-        
+
         emit EmergencyWithdraw(owner(), balance);
     }
 
@@ -96,10 +86,11 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
      * @return balance Баланс аккаунта
      * @return allowance Разрешение для спендера
      */
-    function getAccountInfo(
-        address account, 
-        address spender
-    ) external view returns (uint256 balance, uint256 allowance) {
+    function getAccountInfo(address account, address spender)
+        external
+        view
+        returns (uint256 balance, uint256 allowance)
+    {
         return (balanceOf(account), super.allowance(account, spender));
     }
 
@@ -108,9 +99,7 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
      * @param accounts Массив адресов для проверки
      * @return balances Массив балансов
      */
-    function getMultipleBalances(
-        address[] calldata accounts
-    ) external view returns (uint256[] memory balances) {
+    function getMultipleBalances(address[] calldata accounts) external view returns (uint256[] memory balances) {
         balances = new uint256[](accounts.length);
         for (uint256 i = 0; i < accounts.length; i++) {
             balances[i] = balanceOf(accounts[i]);
@@ -123,15 +112,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
      * @param recipients Массив адресов получателей
      * @param amounts Массив количеств токенов
      */
-    function batchTransfer(
-        address[] calldata recipients,
-        uint256[] calldata amounts
-    ) external {
-        require(
-            recipients.length == amounts.length,
-            "TestToken: arrays length mismatch"
-        );
-        
+    function batchTransfer(address[] calldata recipients, uint256[] calldata amounts) external {
+        require(recipients.length == amounts.length, "TestToken: arrays length mismatch");
+
         for (uint256 i = 0; i < recipients.length; i++) {
             _transfer(msg.sender, recipients[i], amounts[i]);
         }
@@ -168,4 +151,4 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     function getNonce(address owner) external view returns (uint256) {
         return nonces(owner);
     }
-} 
+}
