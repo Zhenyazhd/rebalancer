@@ -8,19 +8,19 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title TestToken
- * @dev Тестовый ERC20 токен для использования в тестах EIP-7702
- * Включает функции mint, burn, permit и другие полезные функции для тестирования
+ * @dev Test ERC20 token for use in EIP-7702 tests
+ * Includes mint, burn, permit and other useful functions for testing
  */
 contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
-    // События для отслеживания операций
+    // Events for tracking operations
     event TokensMinted(address indexed to, uint256 amount);
     event TokensBurned(address indexed from, uint256 amount);
     event EmergencyWithdraw(address indexed owner, uint256 amount);
 
     /**
-     * @dev Конструктор токена
-     * @param initialOwner Адрес владельца контракта
-     * @param initialSupply Начальное количество токенов
+     * @dev Token constructor
+     * @param initialOwner Contract owner address
+     * @param initialSupply Initial token supply
      */
     constructor(address initialOwner, uint256 initialSupply)
         ERC20("Test Token", "TEST")
@@ -33,9 +33,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для минтинга токенов (только владелец)
-     * @param to Адрес получателя
-     * @param amount Количество токенов для минтинга
+     * @dev Function for minting tokens (owner only)
+     * @param to Recipient address
+     * @param amount Amount of tokens to mint
      */
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
@@ -43,9 +43,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для массового минтинга токенов (только владелец)
-     * @param recipients Массив адресов получателей
-     * @param amounts Массив количеств токенов для каждого получателя
+     * @dev Function for batch minting tokens (owner only)
+     * @param recipients Array of recipient addresses
+     * @param amounts Array of token amounts for each recipient
      */
     function batchMint(address[] calldata recipients, uint256[] calldata amounts) external onlyOwner {
         require(recipients.length == amounts.length, "TestToken: arrays length mismatch");
@@ -57,9 +57,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для сжигания токенов с адреса (только владелец)
-     * @param from Адрес, с которого сжигаются токены
-     * @param amount Количество токенов для сжигания
+     * @dev Function for burning tokens from an address (owner only)
+     * @param from Address to burn tokens from
+     * @param amount Amount of tokens to burn
      */
     function burnFrom(address from, uint256 amount) public override onlyOwner {
         super.burnFrom(from, amount);
@@ -67,7 +67,7 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для экстренного вывода ETH из контракта (только владелец)
+     * @dev Function for emergency ETH withdrawal from contract (owner only)
      */
     function emergencyWithdraw() external onlyOwner {
         uint256 balance = address(this).balance;
@@ -80,11 +80,11 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для проверки баланса и разрешений
-     * @param account Адрес для проверки
-     * @param spender Адрес спендера
-     * @return balance Баланс аккаунта
-     * @return allowance Разрешение для спендера
+     * @dev Function for checking balance and allowances
+     * @param account Address to check
+     * @param spender Spender address
+     * @return balance Account balance
+     * @return allowance Allowance for spender
      */
     function getAccountInfo(address account, address spender)
         external
@@ -95,9 +95,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для получения информации о нескольких аккаунтах
-     * @param accounts Массив адресов для проверки
-     * @return balances Массив балансов
+     * @dev Function for getting information about multiple accounts
+     * @param accounts Array of addresses to check
+     * @return balances Array of balances
      */
     function getMultipleBalances(address[] calldata accounts) external view returns (uint256[] memory balances) {
         balances = new uint256[](accounts.length);
@@ -108,9 +108,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для тестирования batch transfer
-     * @param recipients Массив адресов получателей
-     * @param amounts Массив количеств токенов
+     * @dev Function for testing batch transfer
+     * @param recipients Array of recipient addresses
+     * @param amounts Array of token amounts
      */
     function batchTransfer(address[] calldata recipients, uint256[] calldata amounts) external {
         require(recipients.length == amounts.length, "TestToken: arrays length mismatch");
@@ -121,14 +121,14 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для тестирования permit и transfer в одной транзакции
-     * @param from Адрес отправителя
-     * @param to Адрес получателя
-     * @param amount Количество токенов
-     * @param deadline Дедлайн для permit
-     * @param v Компонент подписи
-     * @param r Компонент подписи
-     * @param s Компонент подписи
+     * @dev Function for testing permit and transfer in one transaction
+     * @param from Sender address
+     * @param to Recipient address
+     * @param amount Token amount
+     * @param deadline Permit deadline
+     * @param v Signature component
+     * @param r Signature component
+     * @param s Signature component
      */
     function permitAndTransfer(
         address from,
@@ -144,9 +144,9 @@ contract TestToken is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     }
 
     /**
-     * @dev Функция для получения текущего nonce для permit
-     * @param owner Адрес владельца
-     * @return nonce Текущий nonce
+     * @dev Function for getting current nonce for permit
+     * @param owner Owner address
+     * @return nonce Current nonce
      */
     function getNonce(address owner) external view returns (uint256) {
         return nonces(owner);
